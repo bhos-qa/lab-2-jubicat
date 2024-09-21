@@ -1,0 +1,36 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Verify Java version
+        run: java -version
+        
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+        
+      - name: Build the project
+        run: ./gradlew build --no-daemon
+
+      - name: Run Java tests
+        run: ./gradlew test --no-daemon --rerun-tasks --warning-mode all
+
+      - name: Stop containers
+        run: docker stop $(docker ps -aq)
+      
